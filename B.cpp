@@ -36,6 +36,7 @@ int main() {
         cout << "Possible" << endl;
         for (char i : upper){
             cout << lower.find(tolower(i))+1 << " ";
+            lower[lower.find(tolower(i))] = ' ';
         }
     }
     return 0;
