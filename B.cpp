@@ -1,14 +1,39 @@
 #include <iostream>
 #include <string>
+#include <vector>
 using namespace std;
 
-string reduce(string line) {
-    int i = 0;
-    int size = line.length();
+struct Crap{
+    char symbol{};
+    int counter = 0;
+    int position {};
+};
+int inputSize;
+string input;
+
+void printCrap(vector<Crap> vtc){
+    for (int i = 0; i < vtc.size(); i++){
+        cout << vtc[i].symbol << " " << vtc[i].counter << " " << vtc[i].position << endl;
+    }
+}
+
+vector<Crap> reduce(vector<Crap> line) {
+    int i = 1;
+    int size = line.size();
     while (i < size){
-        if (abs(line[i] - line[i+1]) == 32) {
-            line.erase(i, 2);
-            size = line.length();
+        if (abs(line[i].symbol - line[i-1].symbol) == 32) {
+            Crap upper, lower;
+            if (line[i].symbol > line[i-1].symbol) {
+                upper = line[i-1];
+                lower = line[i];
+            } else {
+                upper = line[i];
+                lower = line[i-1];
+            }
+            input[upper.position] = lower.counter + 48;
+//            cout << lower.counter << endl;
+            line.erase(line.begin() + i- 1, line.begin() + i + 1);
+            size = line.size();
         }
         else i++;
     }
@@ -17,28 +42,38 @@ string reduce(string line) {
 
 
 int main() {
-    string line, upper, lower;
-    cin >> line;
-    for (char i : line) {
-        if (i < 90) upper += i;
-        else lower += i;
+    vector<Crap> temp;
+    cin >> input;
+    inputSize = input.size();
+    int counter = 0;
+    for (int i = 0; i < inputSize; i++) {
+        Crap crap;
+        crap.symbol = input[i];
+        if (input[i] >= 95) crap.counter = ++counter;
+        crap.position = i;
+        temp.push_back(crap);
     }
-    short length = 0;
-    while (length != line.length()){
-        length = line.length();
-        line = reduce(line);
+    int sizeBefore = 0, sizeAfter = inputSize;
+    while (sizeBefore != sizeAfter){
+        sizeBefore = temp.size();
+        temp = reduce(temp);
+        sizeAfter = temp.size();
+//        printCrap(temp);
+//        cout << endl;
+//        cout << sizeBefore << " " << sizeAfter << endl;
     }
 
-    if (line.length() != 0) {
-        cout << "Impossible";
+    if (temp.size() != 0) {
+//        cout << input << endl;
+        cout << "Impossible" << endl;
         return 0;
     } else{
         cout << "Possible" << endl;
-        for (char i : upper){
-            cout << lower.find(tolower(i))+1 << " ";
-            lower[lower.find(tolower(i))] = ' ';
+//        cout << input.size() << endl;
+//        cout << input;
+        for (char i : input){
+            if (i < 60) cout << i << " ";
         }
     }
     return 0;
 }
-
