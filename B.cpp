@@ -6,102 +6,75 @@ using namespace std;
 
 struct Crap{
     char symbol{};
-    int counter = 0;
-    int position {};
-};
-struct Answer{
-    int position {};
-    int counter {};
+    int number = 0;
 };
 int inputSize;
 string input;
-vector<Answer> answer;
+vector<Crap> temp;
+vector<int> answer;
 
-void printCrap(vector<Crap> vtc){
-    for (int i = 0; i < vtc.size(); i++){
-        cout << vtc[i].symbol << " " << vtc[i].counter << " " << vtc[i].position << endl;
-    }
-}
-
-bool comp(Answer ans, Answer awr){
-    return ans.position < awr.position;
-}
-
-vector<Crap> reduce(vector<Crap> line) {
+void reduce() {
     int i = 0;
-    int size = line.size();
+    int size = temp.size();
 
     while (i < size){
         if (i == 0){
-            if (abs(line[i].symbol - line[line.size()-1].symbol) == 32) {
+            if (abs(temp[i].symbol - temp[temp.size() - 1].symbol) == 32) {
                 Crap upper, lower;
-                if (line[i].symbol > line[line.size()-1].symbol) {
-                    upper = line[line.size()-1];
-                    lower = line[i];
+                if (temp[i].symbol > temp[temp.size() - 1].symbol) {
+                    upper = temp[temp.size() - 1];
+                    lower = temp[i];
                 } else {
-                    upper = line[i];
-                    lower = line[line.size()-1];
+                    upper = temp[i];
+                    lower = temp[temp.size() - 1];
                 }
-                Answer awr;
-                awr.position = upper.position;
-                awr.counter = lower.counter;
-                answer.push_back(awr);
-//                answer[upper.position].counter -= lower.counter;
-                line.erase(line.begin());
-                line.pop_back();
-                size = line.size();
+                answer[upper.number] = lower.number;
+                temp.erase(temp.begin());
+                temp.pop_back();
+                size = temp.size();
             } else i++;
         } else {
-            if (abs(line[i].symbol - line[i - 1].symbol) == 32) {
+            if (abs(temp[i].symbol - temp[i - 1].symbol) == 32) {
                 Crap upper, lower;
-                if (line[i].symbol > line[i - 1].symbol) {
-                    upper = line[i - 1];
-                    lower = line[i];
+                if (temp[i].symbol > temp[i - 1].symbol) {
+                    upper = temp[i - 1];
+                    lower = temp[i];
                 } else {
-                    upper = line[i];
-                    lower = line[i - 1];
+                    upper = temp[i];
+                    lower = temp[i - 1];
                 }
-                Answer awr;
-                awr.position = upper.position;
-                awr.counter = lower.counter;
-                answer.push_back(awr);
-//                answer[upper.position].counter -= lower.counter;
-                line.erase(line.begin() + i - 1, line.begin() + i + 1);
-                size = line.size();
+                answer[upper.number] = lower.number;
+                temp.erase(temp.begin() + i - 1, temp.begin() + i + 1);
+                size = temp.size();
             } else i++;
         }
     }
-    return line;
 }
 
-
 int main() {
-    vector<Crap> temp;
     cin >> input;
     inputSize = input.size();
-    int counter = 0;
+    answer.resize(inputSize / 2);
+    int counter = 0, position = 0;
     for (int i = 0; i < inputSize; i++) {
         Crap crap;
         crap.symbol = input[i];
-        if (input[i] >= 95) crap.counter = ++counter;
-        crap.position = i;
+        if (input[i] >= 95) crap.number = ++counter;
+        else crap.number = position++;
         temp.push_back(crap);
     }
-    int sizeBefore = 0, sizeAfter = inputSize;
-    while (sizeBefore != sizeAfter){
+    int sizeBefore = 0;
+    while (sizeBefore != temp.size()){
         sizeBefore = temp.size();
-        temp = reduce(temp);
-        sizeAfter = temp.size();
+        reduce();
     }
-    if (temp.empty()) {
-        cout << "Possible" << endl;
-        sort(answer.begin(), answer.end(), comp);
-        for (Answer c : answer){
-            cout << c.counter << " ";
-            }
-        return 0;
-    } else{
+    if (!temp.empty()) {
         cout << "Impossible";
-        return 0;
+    } else{
+        cout << "Possible" << endl;
+        for (int c : answer){
+            cout << c << " ";
+        }
     }
+    return 0;
 }
