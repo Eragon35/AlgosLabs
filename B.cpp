@@ -1,111 +1,56 @@
 #include <iostream>
+#include <list>
+#include <stack>
 #include <string>
 #include <vector>
-#include <list>
-#include <algorithm>
 using namespace std;
 
 struct Crap{
     char symbol{};
     int number = 0;
 };
+stack<Crap> temp;
 int inputSize;
-string input;
-//vector<Crap> temp;
-list<Crap> temp = {};
+vector<Crap> input;
+string inputLine;
 vector<int> answer;
 
-void printCrap(list<Crap> vtc){
-    for (auto & iter : vtc){
-        cout << iter.symbol << " " << iter.number << endl;
-    }
-    cout << "---------------------------" << endl;
-}
-
-void reduce() {
-    int i = 0;
-    int size = temp.size();
-    auto it = temp.begin();
-
-    while (i < size){
-        cout << "pidor";
-
-        if (it == temp.begin()){
-            if (abs(temp.front().symbol - temp.back().symbol) == 32) {
+void reduce(){
+    temp.push(input[input.size()-1]);
+    for (int i = 0; i < input.size(); i++){
+        if (temp.empty()) temp.push(input[i]);
+        else{
+            if (abs(input[i].symbol - temp.top().symbol) == 32){
                 Crap upper, lower;
-                if (temp.front().symbol > temp.back().symbol) {
-                    upper = temp.back();
-                    lower = temp.front();
+                if (input[i].symbol < temp.top().symbol){
+                    upper = input[i];
+                    lower = temp.top();
                 } else {
-                    upper = temp.front();
-                    lower = temp.back();
+                    lower = input[i];
+                    upper = temp.top();
                 }
                 answer[upper.number] = lower.number;
-//                temp.erase(temp.begin());
-//                temp.pop_back();
-                    temp.pop_front();
-                    temp.pop_back();
-                size = temp.size();
-                it = temp.begin();
-                cout << "deleted first & last" << endl;
-                printCrap(temp);
-            }
-            advance(it, 1);
-            i++;
-        } else {
-            auto pv = prev(it, 1);
-            auto nt = it;
-            if (abs((*it).symbol - (*pv).symbol) == 32) {
-                Crap upper, lower;
-                if ((*it).symbol > (*pv).symbol) {
-                    upper = *pv;
-                    lower = *it;
-                } else {
-                    upper = *it;
-                    lower = *pv;
-                }
-                answer[upper.number] = lower.number;
-//                temp.erase(temp.begin() + i - 1, temp.begin() + i + 1);
-//                temp.remove(upper);
-//                temp.remove(lower);
-                temp.erase(pv);
-                temp.erase(it);
-                cout << "delete inside" << endl;
-                printCrap(temp);
-                size = temp.size();
-                it = temp.begin();
-                advance(it, i);
-            }
-            it = temp.begin();
-            advance(it, i++);
+                temp.pop();
+            } else temp.push(input[i]);
         }
     }
-    cout << "end of reduce" << endl;
 }
 
 int main() {
-    cin >> input;
-    inputSize = input.size();
+    cin >> inputLine;
+    inputSize = inputLine.size();
     answer.resize(inputSize / 2);
-    int counter = 0, position = 0;
+    int counter1 = 0, position1 = 0;
     for (int i = 0; i < inputSize; i++) {
         Crap crap;
-        crap.symbol = input[i];
-        if (input[i] >= 95) crap.number = ++counter;
-        else crap.number = position++;
-        temp.push_back(crap);
+        crap.symbol = inputLine[i];
+        if (inputLine[i] >= 95) crap.number = ++counter1;
+        else crap.number = position1++;
+        input.push_back(crap);
     }
-    printCrap(temp);
-    int sizeBefore = 0;
-    while (sizeBefore != temp.size()){
-        sizeBefore = temp.size();
-        reduce();
-//        printCrap(temp);
-    }
-    if (!temp.empty()) {
+    reduce();
+    if (answer[0] == 0) {
         cout << "Impossible";
-//        cout << endl;
-//        printCrap(temp);
     } else{
         cout << "Possible" << endl;
         for (int c : answer){
