@@ -1,50 +1,76 @@
 #include <iostream>
 #include <string>
-#include <vector>
 #include <unordered_map>
 #include <stack>
 using namespace std;
+unordered_map<string, int> globalMap;
 
-int main() {
-    stack <unordered_map<string, int>> stack;
-    unordered_map<string, int> map;
-    stack.push(map);
-    string str;
-    getline(cin, str);
-    while (!str.empty()) {
-        if (str == "{") {
-            if (stack.empty()) stack.push(map); // insert map
-            else {
-                unordered_map<string, int> temp = stack.top();
-                stack.push(temp);
-            }
+
+string str;
+void block(){
+    unordered_map<string, int> tempMap;
+    while (getline(cin, str)) {
+        if (str.empty()) break;
+        if (str == "{") block(); // going deeper
+        else if (str == "}") { // rollback to previous state
+            for (const auto& item: tempMap) globalMap[item.first] = item.second;
+            tempMap.clear();
+            return;
         }
-        else if (str == "}") stack.pop(); // delete temp map
         else {
             int delimeter = str.find('=');
             string left = str.substr(0, delimeter);
             string right = str.substr(delimeter + 1, str.length());
-            if ((right[0] >= 48 && right[0] <= 57) || (right[0] == '-')) {
-                // it means right is a number => <variable>=<number>
-                if (stack.top().find(left) != stack.top().end()) stack.top()[left] = stoi(right); // it means stack.top() has left
-                else stack.top().insert({left, stoi(right)}); // added new var to stack.top() with it value
+            if (right[0] < 97) { // it means right is a number => <variable>=<number>
+                if (tempMap.find(left) == tempMap.cend()) tempMap[left] = globalMap[left]; // save state before this block
+                globalMap[left] = stoi(right);
             } else { // it means right is a another var => <variable1>=<variable2> & here we should cout
-                int number;
-                if (stack.top().find(right) != stack.top().end()) {
-                    number = stack.top()[right];
-                    if (stack.top().find(left) != stack.top().end()) stack.top()[left] = stack.top()[right]; // check if left exists
-                    else stack.top().insert({left, number});
-                }
-                else {
-                    number = 0;
-                    stack.top().insert({right, 0});
-                    stack.top().insert({left, 0});
-                }
-//                cout << left << " = " << right << " => " << number << endl;
-                cout << number << endl;
+                if (tempMap.find(left) == tempMap.cend()) tempMap[left] = globalMap[left]; // save state before this block
+                globalMap[left] = globalMap[right];
+                cout << globalMap[left] << endl;
             }
         }
-        getline(cin, str);
     }
+}
+
+int main() {
+    block();
     return 0;
 }
+
+//Вадим разрабатывает парсер конфигурационных файлов для своего проекта. Файл состоит из блоков,
+// которые выделяются с помощью символов «{» — начало блока, и «}» — конец блока.
+// Блоки могут вкладываться друг в друга. В один блок может быть вложено несколько других блоков.
+//
+//В конфигурационном файле встречаются переменные. Каждая переменная имеет имя, которое состоит из не более чем
+// десяти строчных букв латинского алфавита. Переменным можно присваивать числовые значения.
+// Изначально все переменные имеют значение 0.
+//
+//Присваивание нового значения записывается как <variable>=<number>, где <variable> — имя переменной,
+// а <number> — целое число, по модулю не превосходящее 109. Парсер читает конфигурационный файл построчно.
+// Как только он встречает выражение присваивания, он присваивает новое значение переменной.
+// Это значение сохраняется до конца текущего блока, а затем восстанавливается старое значение переменной.
+// Если в блок вложены другие блоки, то внутри тех из них, которые идут после присваивания, значение переменной
+// также будет новым.
+//
+//Кроме того, в конфигурационном файле можно присваивать переменной значение другой переменной.
+// Это действие записывается как <variable1>=<variable2>. Прочитав такую строку, парсер присваивает
+// текущее значение переменной variable2 переменной variable1. Как и в случае присваивания константного значения,
+// новое значение сохраняется только до конца текущего блока. После окончания блока переменной возвращается значение,
+// которое было перед началом блока.
+//
+//Для отладки Вадим хочет напечатать присваиваемое значение для каждой строки вида <variable1>=<variable2>.
+// Помогите ему отладить парсер.
+//
+//Формат ввода
+//Входные данные содержат хотя бы одну и не более 105 строк. Каждая строка имеет один из четырех типов:
+//
+//{ — начало блока;
+//} — конец блока;
+//<variable>=<number> — присваивание переменной значения, заданного числом;
+//<variable1>=<variable2> — присваивание одной переменной значения другой переменной.
+//Переменные <variable1> и <variable2> могут совпадать.
+//Гарантируется, что ввод является корректным и соответствует описанию из условия. Ввод не содержит пробелов.
+//
+//Формат вывода
+//Для каждой строки типа <variable1>=<variable2> выведите значение, которое было присвоено.
